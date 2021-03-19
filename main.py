@@ -42,7 +42,10 @@ if rank!=0:
         #skipping the lines read by other thread
         next(file_in)
     a=file_in.readline()
+    #extracting text and coordinates from tweets
     a=[json.loads(a[:-2])["value"]["geometry"]["coordinates"],json.loads(a[:-2])["doc"]["text"]]
+
+    #counter
     m=m+1
 
     #loop to load and count the lines to be read by each thread
@@ -55,9 +58,19 @@ if rank!=0:
             except:
                 break
         a=file_in.readline()
-        a=[json.loads(a[:-2])["value"]["geometry"]["coordinates"],json.loads(a[:-2])["doc"]["text"]]
-        if not a:
+
+        #last line is '''' }}\n '''' so we remove it
+        if not a or a[:-1]=="]}":
             break
+        #last json item does not end with comma
+        if a[-2]==',':
+            #extracting text and coordinates from tweets
+            a=[json.loads(a[:-2])["value"]["geometry"]["coordinates"],json.loads(a[:-2])["doc"]["text"]]
+        else:
+            #extracting text and coordinates from tweets
+            a=[json.loads(a[:-1])["value"]["geometry"]["coordinates"],json.loads(a[:-1])["doc"]["text"]]
+
+        #counter
         m=m+1
 
     #closing the input file object
