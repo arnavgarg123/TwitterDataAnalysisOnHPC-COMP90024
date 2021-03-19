@@ -22,6 +22,7 @@ if rank!=0:
     sentiment_word=[]
     for i in file_AFINN.readlines():
         sentiment_word=sentiment_word+[i.split()]
+    ############print(sentiment_word)
 
     #loading melbourne geo data json file and extracting id and coordinates
     map=json.load(file_map)
@@ -34,12 +35,14 @@ if rank!=0:
     #counter for number of rows processed on each thread
     m=0
 
-    #loop to load and count the first line to be read by each thread
+    #skipping first line of file as we so not look at number of lines in the json file
     next(file_in)
+    #loop to load and count the first line to be read by each thread
     for i in range(0,rank-1):
         #skipping the lines read by other thread
         next(file_in)
     a=file_in.readline()
+    a=[json.loads(a[:-2])["value"]["geometry"]["coordinates"],json.loads(a[:-2])["doc"]["text"]]
     m=m+1
 
     #loop to load and count the lines to be read by each thread
@@ -52,6 +55,7 @@ if rank!=0:
             except:
                 break
         a=file_in.readline()
+        a=[json.loads(a[:-2])["value"]["geometry"]["coordinates"],json.loads(a[:-2])["doc"]["text"]]
         if not a:
             break
         m=m+1
