@@ -15,10 +15,11 @@ print('rank',rank)
 #only run on child nodes
 if rank!=0 or size==1:
     #creating data file object
-    file_in=open("smallTwitter.json")
+    file_in=open("bigTwitter.json")
     file_map=open("melbGrid.json")
     file_AFINN=open("AFINN.txt")
 
+    #List for sentiment data
     sentiment_word=[]
     for i in file_AFINN.readlines():
         sentiment_word=sentiment_word+[i.replace("\n","").split("\t")]
@@ -34,6 +35,8 @@ if rank!=0 or size==1:
 
     #counter for number of rows processed on each thread
     m=0
+    #counter for sentiment
+    total=0
 
     #skipping first line of file as we so not look at number of lines in the json file
     next(file_in)
@@ -46,10 +49,9 @@ if rank!=0 or size==1:
     a=json.loads(a[:-2])
     a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-    set_text=set(a[1])
-    result = [x for x in sentiment_word if x[0] in set_text]
-    total=0
-    total=total+sum([int(x[1]) for x in result])
+    #counting sentiment score of a tweet
+    result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+    total=total+sum(result)
     #print("Total = ",total)
 
     #counter
@@ -75,17 +77,18 @@ if rank!=0 or size==1:
             a=json.loads(a[:-2])
             a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-            set_text=set(a[1])
-            result = [x for x in sentiment_word if x[0] in set_text]
-            total=total+sum([int(x[1]) for x in result])
+            #counting sentiment score of a tweet
+            result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+            #print(result)
+            total=total+sum(result)
         else:
             #extracting text and coordinates from tweets
             a=json.loads(a[:-1])
             a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
             set_text=set(a[1])
-            result = [x for x in sentiment_word if x[0] in set_text]
-            total=total+sum([int(x[1]) for x in result])
+            result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+            total=total+sum(result)
 
         #counter
         m=m+1
