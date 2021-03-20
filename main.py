@@ -58,17 +58,15 @@ if rank!=0 or size==1:
     #calculating whether tweet lies in grids
     flg_area=0
     for i in range(len(mapdict)):
-        if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
-            flg_area+=1
+        if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+            flg_area=1
 
     #counting sentiment score of a tweet, only if it lies in map range
-    if flg_area>0:
+    if flg_area==1:
         result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
         total=total+sum(result)
-        #print("Total = ",total)
-
-    #counter
-    m=m+1
+        #counter
+        m=m+1
 
     #loop to load and count the lines to be read by each thread
     while True:
@@ -94,13 +92,15 @@ if rank!=0 or size==1:
             #calculating whether tweet lies in grids
             flg_area=0
             for i in range(len(mapdict)):
-                if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
-                    flg_area+=1
+                if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+                    flg_area=1
 
             #counting sentiment score of a tweet, only if it lies in map range
-            if flg_area>0:
+            if flg_area==1:
                 result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
                 total=total+sum(result)
+                #counter
+                m=m+1
 
         else:
             #extracting text and coordinates from tweets
@@ -112,16 +112,15 @@ if rank!=0 or size==1:
             #calculating whether tweet lies in grids
             flg_area=0
             for i in range(len(mapdict)):
-                if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
-                    flg_area+=1
+                if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+                    flg_area=1
 
             #counting sentiment score of a tweet, only if it lies in map range
-            if flg_area>0:
+            if flg_area==1:
                 result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
                 total=total+sum(result)
-
-        #counter
-        m=m+1
+                #counter
+                m=m+1
 
     #closing the input file object
     file_in.close()
