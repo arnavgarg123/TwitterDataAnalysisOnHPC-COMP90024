@@ -13,9 +13,9 @@ size = comm.Get_size()
 print('rank',rank)
 
 #only run on child nodes
-if rank!=0:
+if rank!=0 or size==1:
     #creating data file object
-    file_in=open("bigTwitter.json")
+    file_in=open("smallTwitter.json")
     file_map=open("melbGrid.json")
     file_AFINN=open("AFINN.txt")
 
@@ -94,11 +94,14 @@ if rank!=0:
     file_in.close()
     print("Total = ",total)
 #master thread gathering data from child nodes and integerating it
-if rank == 0:
+if rank == 0 or size==1:
     s = 0
     for i in range(1,size):
         s=s+comm.recv()
-    print(rank,":",s)
+    if s:
+        print(rank,":",s)
+    else:
+        print(rank,":",m)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 #child threads sending the output of processed data
