@@ -44,8 +44,7 @@ if rank!=0:
     a=file_in.readline()
     #extracting text and coordinates from tweets
     a=json.loads(a[:-2])
-    a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"]]
-
+    a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
     #counter
     m=m+1
 
@@ -67,11 +66,11 @@ if rank!=0:
         if a[-2]==',':
             #extracting text and coordinates from tweets
             a=json.loads(a[:-2])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"]]
+            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
         else:
             #extracting text and coordinates from tweets
             a=json.loads(a[:-1])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"]]
+            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
 
         #counter
         m=m+1
