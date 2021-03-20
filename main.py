@@ -15,9 +15,9 @@ print('rank',rank)
 #only run on child nodes
 if rank!=0 or size==1:
     #creating data file object
-    file_in=open("bigTwitter.json")
-    file_map=open("melbGrid.json")
-    file_AFINN=open("AFINN.txt")
+    file_in=open("bigTwitter.json", encoding="utf8")
+    file_map=open("melbGrid.json", encoding="utf8")
+    file_AFINN=open("AFINN.txt", encoding="utf8")
 
     #List for sentiment data
     sentiment_word=[]
