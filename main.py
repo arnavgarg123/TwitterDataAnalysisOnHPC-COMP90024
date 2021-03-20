@@ -14,7 +14,7 @@ data_file_nm = sys.argv[1]
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-print('rank',rank)
+print('Thread ',rank, 'started @', time.ctime())
 
 #only run on child nodes
 if rank!=0 or size==1:
@@ -124,19 +124,25 @@ if rank!=0 or size==1:
 
     #closing the input file object
     file_in.close()
-    print("Total = ",total)
+
+    #collecting data to be returned
+    return_val=m,total
+    print("Tweets within Area, Sum of Sentiments = ",return_val)
+
 #master thread gathering data from child nodes and integerating it
 if rank == 0 or size==1:
-    s = 0
+    total_sentiment=0
+    total_tweets=0
     for i in range(1,size):
-        s=s+comm.recv()
-    if s:
-        print(rank,":",s)
-    else:
-        print(rank,":",m)
+        rcvd_val=comm.recv()
+        total_sentiment+=rcvd_val[1]
+        total_tweets+=rcvd_val[0]
+    print("Total Sentiment Score :",total_sentiment)
+    print("Tweets after Filtering :",total_tweets)    
+    print("Average sentiment Score :",total_sentiment/total_tweets)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 #child threads sending the output of processed data
 else:
-    comm.send(m, dest=0)
-    print(rank,":",m)
+    comm.send(return_val, dest=0)
+    print("Thread ", rank ," has shared data @", time.ctime())
