@@ -35,6 +35,8 @@ if rank!=0 or size==1:
     mapdict={}
     for i in map['features']:
         mapdict[i['properties']['id']]=[i['properties']['xmin'],i['properties']['xmax'],i['properties']['ymin'],i['properties']['ymax']]
+    
+    area_val_list=list(mapdict.values())
     ############print(mapdict)
 
     #counter for number of rows processed on each thread
@@ -53,10 +55,17 @@ if rank!=0 or size==1:
     a=json.loads(a[:-2])
     a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-    #counting sentiment score of a tweet
-    result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-    total=total+sum(result)
-    #print("Total = ",total)
+    #calculating whether tweet lies in grids
+    flg_area=0
+    for i in range(len(mapdict)):
+        if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
+            flg_area+=1
+
+    #counting sentiment score of a tweet, only if it lies in map range
+    if flg_area>0:
+        result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+        total=total+sum(result)
+        #print("Total = ",total)
 
     #counter
     m=m+1
@@ -81,18 +90,35 @@ if rank!=0 or size==1:
             a=json.loads(a[:-2])
             a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-            #counting sentiment score of a tweet
-            result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-            #print(result)
-            total=total+sum(result)
+
+            #calculating whether tweet lies in grids
+            flg_area=0
+            for i in range(len(mapdict)):
+                if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
+                    flg_area+=1
+
+            #counting sentiment score of a tweet, only if it lies in map range
+            if flg_area>0:
+                result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+                total=total+sum(result)
+
         else:
             #extracting text and coordinates from tweets
             a=json.loads(a[:-1])
             a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-            set_text=set(a[1])
-            result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-            total=total+sum(result)
+            # set_text=set(a[1])  redundant???
+            
+            #calculating whether tweet lies in grids
+            flg_area=0
+            for i in range(len(mapdict)):
+                if (area_val_list[i][0] <= a[0][0] <= area_val_list[i][1]) and (area_val_list[i][2] <=a[0][1] <= area_val_list[i][3]):
+                    flg_area+=1
+
+            #counting sentiment score of a tweet, only if it lies in map range
+            if flg_area>0:
+                result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+                total=total+sum(result)
 
         #counter
         m=m+1
