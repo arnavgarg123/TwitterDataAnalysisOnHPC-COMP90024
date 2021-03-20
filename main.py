@@ -15,13 +15,13 @@ print('rank',rank)
 #only run on child nodes
 if rank!=0:
     #creating data file object
-    file_in=open("smallTwitter.json")
+    file_in=open("bigTwitter.json")
     file_map=open("melbGrid.json")
     file_AFINN=open("AFINN.txt")
 
     sentiment_word=[]
     for i in file_AFINN.readlines():
-        sentiment_word=sentiment_word+[i.split()]
+        sentiment_word=sentiment_word+[i.replace("\n","").split("\t")]
     ############print(sentiment_word)
 
     #loading melbourne geo data json file and extracting id and coordinates
@@ -44,7 +44,14 @@ if rank!=0:
     a=file_in.readline()
     #extracting text and coordinates from tweets
     a=json.loads(a[:-2])
-    a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
+    a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+
+    set_text=set(a[1])
+    result = [x for x in sentiment_word if x[0] in set_text]
+    total=0
+    total=total+sum([int(x[1]) for x in result])
+    #print("Total = ",total)
+
     #counter
     m=m+1
 
@@ -66,18 +73,26 @@ if rank!=0:
         if a[-2]==',':
             #extracting text and coordinates from tweets
             a=json.loads(a[:-2])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
+            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+
+            set_text=set(a[1])
+            result = [x for x in sentiment_word if x[0] in set_text]
+            total=total+sum([int(x[1]) for x in result])
         else:
             #extracting text and coordinates from tweets
             a=json.loads(a[:-1])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].split()]
+            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+
+            set_text=set(a[1])
+            result = [x for x in sentiment_word if x[0] in set_text]
+            total=total+sum([int(x[1]) for x in result])
 
         #counter
         m=m+1
 
     #closing the input file object
     file_in.close()
-
+    print("Total = ",total)
 #master thread gathering data from child nodes and integerating it
 if rank == 0:
     s = 0
