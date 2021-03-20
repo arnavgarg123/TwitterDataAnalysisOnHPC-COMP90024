@@ -2,9 +2,13 @@
 from mpi4py import MPI
 import time
 import json
+import sys
 
 #checking start time
 start_time = time.time()
+
+# reading file name from command
+data_file_nm = sys.argv[1]
 
 #Initialising Mpi4py and and getting number of threads
 comm = MPI.COMM_WORLD
@@ -15,7 +19,7 @@ print('rank',rank)
 #only run on child nodes
 if rank!=0 or size==1:
     #creating data file object
-    file_in=open("bigTwitter.json", encoding="utf8")
+    file_in=open(data_file_nm, encoding="utf8")
     file_map=open("melbGrid.json", encoding="utf8")
     file_AFINN=open("AFINN.txt", encoding="utf8")
 
