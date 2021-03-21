@@ -9,6 +9,9 @@ start_time = time.time()
 
 # reading file name from command
 data_file_nm = sys.argv[1]
+map_file_nm = sys.argv[2]
+sentiment_file_nm = sys.argv[3]
+
 
 #Initialising Mpi4py and and getting number of threads
 comm = MPI.COMM_WORLD
@@ -20,8 +23,8 @@ print('Thread ',rank, 'started @', time.ctime())
 if rank!=0 or size==1:
     #creating data file object
     file_in=open(data_file_nm, encoding="utf8")
-    file_map=open("melbGrid.json", encoding="utf8")
-    file_AFINN=open("AFINN.txt", encoding="utf8")
+    file_map=open(map_file_nm, encoding="utf8")
+    file_AFINN=open(sentiment_file_nm, encoding="utf8")
 
     #List for sentiment data
     sentiment_word=[]
