@@ -1,5 +1,6 @@
 #Library importing
 from mpi4py import MPI
+from collections import Counter
 import time
 import json
 import sys
@@ -40,12 +41,13 @@ if rank!=0 or size==1:
         mapdict[i['properties']['id']]=[i['properties']['xmin'],i['properties']['xmax'],i['properties']['ymin'],i['properties']['ymax']]
     
     area_val_list=list(mapdict.values())
+    area_nm_list=list(mapdict.keys())
     ############print(mapdict)
 
     #counter for number of rows processed on each thread
     m=0
     #counter for sentiment
-    total=0
+    total=[0 for i in range(len(mapdict))]
 
     #skipping first line of file as we so not look at number of lines in the json file
     next(file_in)
@@ -60,14 +62,17 @@ if rank!=0 or size==1:
 
     #calculating whether tweet lies in grids
     flg_area=0
+    area_cnt = [0 for i in range(len(mapdict))]
     for i in range(len(mapdict)):
-        if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+        if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
             flg_area=1
+            area_cnt[i]+=1
+            j=i
 
     #counting sentiment score of a tweet, only if it lies in map range
     if flg_area==1:
         result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-        total=total+sum(result)
+        total[j]+=sum(result)
         #counter
         m=m+1
 
@@ -95,13 +100,15 @@ if rank!=0 or size==1:
             #calculating whether tweet lies in grids
             flg_area=0
             for i in range(len(mapdict)):
-                if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+                if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
                     flg_area=1
+                    area_cnt[i]+=1
+                    j=i
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
                 result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-                total=total+sum(result)
+                total[j]+=sum(result)
                 #counter
                 m=m+1
 
@@ -115,37 +122,45 @@ if rank!=0 or size==1:
             #calculating whether tweet lies in grids
             flg_area=0
             for i in range(len(mapdict)):
-                if (float(area_val_list[i][0]) <= float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) <= float(area_val_list[i][3])):
+                if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
                     flg_area=1
+                    area_cnt[i]+=1
+                    j=i
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
                 result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
-                total=total+sum(result)
+                total[j]+=sum(result)
                 #counter
                 m=m+1
 
     #closing the input file object
     file_in.close()
+    area_cnt_dict = {area_nm_list[i]: area_cnt[i] for i in range(len(mapdict))}
+    total_sent_dict = {area_nm_list[i]: total[i] for i in range(len(mapdict))}     
 
     #collecting data to be returned
-    return_val=m,total
-    print("Tweets within Area, Sum of Sentiments = ",return_val)
+    to_be_sent=area_cnt_dict,total_sent_dict
+    print("Tweets cnt by Area, Sum of Sentiments by Area= ",to_be_sent)
 
 #master thread gathering data from child nodes and integerating it
 if rank == 0 or size==1:
-    total_sentiment=0
-    total_tweets=0
     for i in range(1,size):
         rcvd_val=comm.recv()
-        total_sentiment+=rcvd_val[1]
-        total_tweets+=rcvd_val[0]
-    print("Total Sentiment Score :",total_sentiment)
-    print("Tweets after Filtering :",total_tweets)    
-    print("Average sentiment Score :",total_sentiment/total_tweets)
+        #print(rcvd_val)
+        if(i==1):
+           d1 = Counter(rcvd_val[0])
+           d2 = Counter(rcvd_val[1])
+        else:
+            d1=Counter(d1)+Counter(rcvd_val[0])
+            d2=Counter(d2)+Counter(rcvd_val[1])
+    result = Counter({key : d2[key] / d1[key] for key in d1})    
+    print("Total Sentiment Score by Area:",d2)
+    print("Tweets after Filtering by Area:",d1)    
+    print("Average sentiment Score by Area:",result)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 #child threads sending the output of processed data
 else:
-    comm.send(return_val, dest=0)
+    comm.send(to_be_sent, dest=0)
     print("Thread ", rank ," has shared data @", time.ctime())
