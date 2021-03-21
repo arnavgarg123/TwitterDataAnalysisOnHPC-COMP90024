@@ -71,7 +71,16 @@ if rank!=0 or size==1:
 
     #counting sentiment score of a tweet, only if it lies in map range
     if flg_area==1:
-        result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+        result=[]
+        for x in sentiment_word:
+            if len(x[0].split())>1:
+                if " ".join(a[1]).count(x[0])>0:
+                    result=result+[int(x[1])*" ".join(a[1]).count(x[0])]
+                    #print("-----------",result, x[0])
+            elif len(x[0].split())==1:
+                if a[1].count(x[0])>0:
+                    result=result+[int(x[1])*a[1].count(x[0])]
+        #result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
         total[j]+=sum(result)
         #counter
         m=m+1
@@ -107,7 +116,16 @@ if rank!=0 or size==1:
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
-                result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+                result=[]
+                for x in sentiment_word:
+                    if len(x[0].split())>1:
+                        if " ".join(a[1]).count(x[0])>0:
+                            result=result+[int(x[1])*" ".join(a[1]).count(x[0])]
+                            #print("-----------",result, x[0])
+                    elif len(x[0].split())==1:
+                        if a[1].count(x[0])>0:
+                            result=result+[int(x[1])*a[1].count(x[0])]
+                #result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
                 total[j]+=sum(result)
                 #counter
                 m=m+1
@@ -129,7 +147,16 @@ if rank!=0 or size==1:
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
-                result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
+                result=[]
+                for x in sentiment_word:
+                    if len(x[0].split())>1:
+                        if " ".join(a[1]).count(x[0])>0:
+                            result=result+[int(x[1])*" ".join(a[1]).count(x[0])]
+                            #print("-----------",result, x[0])
+                    elif len(x[0].split())==1:
+                        if a[1].count(x[0])>0:
+                            result=result+[int(x[1])*a[1].count(x[0])]
+                #result = [int(x[1])*a[1].count(x[0]) for x in sentiment_word if a[1].count(x[0])>0]
                 total[j]+=sum(result)
                 #counter
                 m=m+1
