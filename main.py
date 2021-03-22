@@ -67,7 +67,7 @@ total=[0 for i in range(len(mapdict))]
 #skipping first line of file as we so not look at number of lines in the json file
 next(file_in)
 #loop to load and count the first line to be read by each thread
-for i in range(0,rank-1):
+for i in range(0,rank):
     #skipping the lines read by other thread
     next(file_in)
 a=file_in.readline()
@@ -93,7 +93,7 @@ if flg_area==1:
 
 #loop to load and count the lines to be read by each thread
 while True:
-    for i in range(1,size-1):
+    for i in range(1,size):
         #exception handeling as the file object could try to go past the last line
         try:
             #skipping the lines read by other thread
@@ -158,23 +158,19 @@ total_sent_dict = {area_nm_list[i]: total[i] for i in range(len(mapdict))}
 to_be_sent=area_cnt_dict,total_sent_dict
 print("Tweets cnt by Area, Sum of Sentiments by Area= ",to_be_sent)
 
-comm.send(to_be_sent, dest=0)
-print("Thread ", rank ," has shared data @", time.ctime())
-
 
 #master thread gathering data from child nodes and integerating it
 if rank == 0 or size==1:
     rcvd_val=0
+    d1 = Counter(to_be_sent[0])
+    d1 = {x:y for x,y in d1.items() if y!=0}
+    d2 = Counter(to_be_sent[1])
+    d2 = {x:y for x,y in d2.items() if y!=0}
+    
     for i in range(1,size):
         rcvd_val=comm.recv()
-        if(i==1):
-           d1 = Counter(rcvd_val[0])
-           d1 = {x:y for x,y in d1.items() if y!=0}
-           d2 = Counter(rcvd_val[1])
-           d2 = {x:y for x,y in d2.items() if y!=0}
-        else:
-            d1=Counter(d1)+Counter(rcvd_val[0])
-            d2=Counter(d2)+Counter(rcvd_val[1])
+        d1=Counter(d1)+Counter(rcvd_val[0])
+        d2=Counter(d2)+Counter(rcvd_val[1])
     if rcvd_val:
         result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
         print("Total Sentiment Score by Area:",d2)
@@ -195,6 +191,6 @@ if rank == 0 or size==1:
 
 
 #child threads sending the output of processed data
-#else:
-#    comm.send(to_be_sent, dest=0)
-#    print("Thread ", rank ," has shared data @", time.ctime())
+else:
+    comm.send(to_be_sent, dest=0)
+    print("Thread ", rank ," has shared data @", time.ctime())
