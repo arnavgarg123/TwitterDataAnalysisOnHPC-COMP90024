@@ -25,16 +25,14 @@ def fun():
     for x in sentiment_word:
         if len(x[:-1])>1:
             if " ".join(a[1]).count(" ".join(x[:-1]))>0:
-                result=result+[int(x[-1])*" ".join(a[1]).count(" ".join(x[:-1]))]
+                result=result+[int(x[-1])*" ".join(a[1]).count(" "+" ".join(x[:-1])+" ")]
+                #print("-----------",result, x,"+++", " ".join(a[1]))
                 a[1]=" ".join(a[1]).replace(" ".join(x[:-1]),"123").split()
-                #print("-----------",result, x[0])
         elif len(x[:-1])==1:
             if a[1].count(x[0])>0:
                 result=result+[int(x[1])*a[1].count(x[0])]
     return result
 
-#only run on child nodes
-#if rank!=0 or size==1:
 #creating data file object
 file_in=open(data_file_nm, encoding="utf8")
 file_map=open(map_file_nm, encoding="utf8")
@@ -73,8 +71,10 @@ for i in range(0,rank):
 a=file_in.readline()
 #extracting text and coordinates from tweets
 a=json.loads(a[:-2])
-a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
-
+a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].lower().split()]
+for i in range(len(a[1])):
+    if a[1][i].endswith(",") or a[1][i].endswith("!") or a[1][i].endswith(".") or a[1][i].endswith("?") or a[1][i].endswith("'") or a[1][i].endswith('''"'''):
+        a[1][i]=a[1][i].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"")
 #calculating whether tweet lies in grids
 flg_area=0
 area_cnt = [0 for i in range(len(mapdict))]
@@ -109,8 +109,10 @@ while True:
     if a[-2]==',':
         #extracting text and coordinates from tweets
         a=json.loads(a[:-2])
-        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
-
+        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].lower().split()]
+        for i in range(len(a[1])):
+            if a[1][i].endswith(",") or a[1][i].endswith("!") or a[1][i].endswith(".") or a[1][i].endswith("?") or a[1][i].endswith("'") or a[1][i].endswith('''"'''):
+                a[1][i]=a[1][i].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"")
 
         #calculating whether tweet lies in grids
         flg_area=0
@@ -130,7 +132,10 @@ while True:
     else:
         #extracting text and coordinates from tweets
         a=json.loads(a[:-1])
-        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].lower().split()]
+        for i in range(len(a[1])):
+            if a[1][i].endswith(",") or a[1][i].endswith("!") or a[1][i].endswith(".") or a[1][i].endswith("?") or a[1][i].endswith("'") or a[1][i].endswith('''"'''):
+                a[1][i]=a[1][i].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"")
 
         # set_text=set(a[1])  redundant???
 
@@ -158,7 +163,6 @@ total_sent_dict = {area_nm_list[i]: total[i] for i in range(len(mapdict))}
 to_be_sent=area_cnt_dict,total_sent_dict
 print("Tweets cnt by Area, Sum of Sentiments by Area= ",to_be_sent)
 
-
 #master thread gathering data from child nodes and integerating it
 if rank == 0 or size==1:
     rcvd_val=0
@@ -166,29 +170,16 @@ if rank == 0 or size==1:
     d1 = {x:y for x,y in d1.items() if y!=0}
     d2 = Counter(to_be_sent[1])
     d2 = {x:y for x,y in d2.items() if y!=0}
-    
+
     for i in range(1,size):
         rcvd_val=comm.recv()
         d1=Counter(d1)+Counter(rcvd_val[0])
         d2=Counter(d2)+Counter(rcvd_val[1])
-    if rcvd_val:
-        result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
-        print("Total Sentiment Score by Area:",d2)
-        print("Tweets after Filtering by Area:",d1)
-        print("Average sentiment Score by Area:",result)
-        print("--- %s seconds ---" % (time.time() - start_time))
-    else:
-        d1 = Counter(to_be_sent[0])
-        d1 = {x:y for x,y in d1.items() if y!=0}
-        d2 = Counter(to_be_sent[1])
-        d2 = {x:y for x,y in d2.items() if y!=0}
-        result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
-        print("Total Sentiment Score by Area:",d2)
-        print("Tweets after Filtering by Area:",d1)
-        print("Average sentiment Score by Area:",result)
-        print("--- %s seconds ---" % (time.time() - start_time))
-
-
+    result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
+    print("Total Sentiment Score by Area:",d2)
+    print("Tweets after Filtering by Area:",d1)
+    print("Average sentiment Score by Area:",result)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 #child threads sending the output of processed data
 else:
