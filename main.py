@@ -25,7 +25,7 @@ def fun():
     for x in sentiment_word:
         if len(x[:-1])>1:
             if " ".join(a[1]).count(" ".join(x[:-1]))>0:
-                result=result+[int(x[2])*" ".join(a[1]).count(" ".join(x[:-1]))]
+                result=result+[int(x[-1])*" ".join(a[1]).count(" ".join(x[:-1]))]
                 a[1]=" ".join(a[1]).replace(" ".join(x[:-1]),"123").split()
                 #print("-----------",result, x[0])
         elif len(x[:-1])==1:
