@@ -20,14 +20,15 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 print('Thread ',rank, 'started @', time.ctime())
 
-def fun(sentiment_word,a):
+def fun():
     result=[]
     for x in sentiment_word:
-        if len(x[0].split())>1:
-            if " ".join(a[1]).count(x[0])>0:
-                result=result+[int(x[1])*" ".join(a[1]).count(x[0])]
+        if len(x[:-1])>1:
+            if " ".join(a[1]).count(" ".join(x[:-1]))>0:
+                result=result+[int(x[2])*" ".join(a[1]).count(" ".join(x[:-1]))]
+                a[1]=" ".join(a[1]).replace(" ".join(x[:-1]),"123").split()
                 #print("-----------",result, x[0])
-        elif len(x[0].split())==1:
+        elif len(x[:-1])==1:
             if a[1].count(x[0])>0:
                 result=result+[int(x[1])*a[1].count(x[0])]
     return result
@@ -42,7 +43,9 @@ if rank!=0 or size==1:
     #List for sentiment data
     sentiment_word=[]
     for i in file_AFINN.readlines():
-        sentiment_word=sentiment_word+[i.replace("\n","").split("\t")]
+        sentiment_word=sentiment_word+[i.replace("\n","").split()]
+    sentiment_word.sort(key=len,reverse=True)
+
     ############print(sentiment_word)
 
     #loading melbourne geo data json file and extracting id and coordinates
@@ -83,7 +86,7 @@ if rank!=0 or size==1:
 
     #counting sentiment score of a tweet, only if it lies in map range
     if flg_area==1:
-        result=fun(sentiment_word,a)
+        result=fun()
         total[j]+=sum(result)
         #counter
         m=m+1
@@ -119,7 +122,7 @@ if rank!=0 or size==1:
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
-                result=fun(sentiment_word,a)
+                result=fun()
                 total[j]+=sum(result)
                 #counter
                 m=m+1
@@ -141,7 +144,7 @@ if rank!=0 or size==1:
 
             #counting sentiment score of a tweet, only if it lies in map range
             if flg_area==1:
-                result=fun(sentiment_word,a)
+                result=fun()
                 total[j]+=sum(result)
                 #counter
                 m=m+1
