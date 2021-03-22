@@ -34,129 +34,133 @@ def fun():
     return result
 
 #only run on child nodes
-if rank!=0 or size==1:
-    #creating data file object
-    file_in=open(data_file_nm, encoding="utf8")
-    file_map=open(map_file_nm, encoding="utf8")
-    file_AFINN=open(sentiment_file_nm, encoding="utf8")
+#if rank!=0 or size==1:
+#creating data file object
+file_in=open(data_file_nm, encoding="utf8")
+file_map=open(map_file_nm, encoding="utf8")
+file_AFINN=open(sentiment_file_nm, encoding="utf8")
 
-    #List for sentiment data
-    sentiment_word=[]
-    for i in file_AFINN.readlines():
-        sentiment_word=sentiment_word+[i.replace("\n","").split()]
-    sentiment_word.sort(key=len,reverse=True)
+#List for sentiment data
+sentiment_word=[]
+for i in file_AFINN.readlines():
+    sentiment_word=sentiment_word+[i.replace("\n","").split()]
+sentiment_word.sort(key=len,reverse=True)
 
-    ############print(sentiment_word)
+############print(sentiment_word)
 
-    #loading melbourne geo data json file and extracting id and coordinates
-    map=json.load(file_map)
-    #dictionary for the coordinates
-    mapdict={}
-    for i in map['features']:
-        mapdict[i['properties']['id']]=[i['properties']['xmin'],i['properties']['xmax'],i['properties']['ymin'],i['properties']['ymax']]
+#loading melbourne geo data json file and extracting id and coordinates
+map=json.load(file_map)
+#dictionary for the coordinates
+mapdict={}
+for i in map['features']:
+    mapdict[i['properties']['id']]=[i['properties']['xmin'],i['properties']['xmax'],i['properties']['ymin'],i['properties']['ymax']]
 
-    area_val_list=list(mapdict.values())
-    area_nm_list=list(mapdict.keys())
-    ############print(mapdict)
+area_val_list=list(mapdict.values())
+area_nm_list=list(mapdict.keys())
+############print(mapdict)
 
-    #counter for number of rows processed on each thread
-    m=0
-    #counter for sentiment
-    total=[0 for i in range(len(mapdict))]
+#counter for number of rows processed on each thread
+m=0
+#counter for sentiment
+total=[0 for i in range(len(mapdict))]
 
-    #skipping first line of file as we so not look at number of lines in the json file
+#skipping first line of file as we so not look at number of lines in the json file
+next(file_in)
+#loop to load and count the first line to be read by each thread
+for i in range(0,rank-1):
+    #skipping the lines read by other thread
     next(file_in)
-    #loop to load and count the first line to be read by each thread
-    for i in range(0,rank-1):
-        #skipping the lines read by other thread
-        next(file_in)
-    a=file_in.readline()
-    #extracting text and coordinates from tweets
-    a=json.loads(a[:-2])
-    a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+a=file_in.readline()
+#extracting text and coordinates from tweets
+a=json.loads(a[:-2])
+a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-    #calculating whether tweet lies in grids
-    flg_area=0
-    area_cnt = [0 for i in range(len(mapdict))]
-    for i in range(len(mapdict)):
-        if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
-            flg_area=1
-            area_cnt[i]+=1
-            j=i
+#calculating whether tweet lies in grids
+flg_area=0
+area_cnt = [0 for i in range(len(mapdict))]
+for i in range(len(mapdict)):
+    if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+        flg_area=1
+        area_cnt[i]+=1
+        j=i
 
-    #counting sentiment score of a tweet, only if it lies in map range
-    if flg_area==1:
-        result=fun()
-        total[j]+=sum(result)
-        #counter
-        m=m+1
+#counting sentiment score of a tweet, only if it lies in map range
+if flg_area==1:
+    result=fun()
+    total[j]+=sum(result)
+    #counter
+    m=m+1
 
-    #loop to load and count the lines to be read by each thread
-    while True:
-        for i in range(1,size-1):
-            #exception handeling as the file object could try to go past the last line
-            try:
-                #skipping the lines read by other thread
-                next(file_in)
-            except:
-                break
-        a=file_in.readline()
-
-        #last line is '''' }}\n '''' so we remove it
-        if not a or a[:-1]=="]}":
+#loop to load and count the lines to be read by each thread
+while True:
+    for i in range(1,size-1):
+        #exception handeling as the file object could try to go past the last line
+        try:
+            #skipping the lines read by other thread
+            next(file_in)
+        except:
             break
-        #last json item does not end with comma
-        if a[-2]==',':
-            #extracting text and coordinates from tweets
-            a=json.loads(a[:-2])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+    a=file_in.readline()
+
+    #last line is '''' }}\n '''' so we remove it
+    if not a or a[:-1]=="]}":
+        break
+    #last json item does not end with comma
+    if a[-2]==',':
+        #extracting text and coordinates from tweets
+        a=json.loads(a[:-2])
+        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
 
-            #calculating whether tweet lies in grids
-            flg_area=0
-            for i in range(len(mapdict)):
-                if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
-                    flg_area=1
-                    area_cnt[i]+=1
-                    j=i
+        #calculating whether tweet lies in grids
+        flg_area=0
+        for i in range(len(mapdict)):
+            if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+                flg_area=1
+                area_cnt[i]+=1
+                j=i
 
-            #counting sentiment score of a tweet, only if it lies in map range
-            if flg_area==1:
-                result=fun()
-                total[j]+=sum(result)
-                #counter
-                m=m+1
+        #counting sentiment score of a tweet, only if it lies in map range
+        if flg_area==1:
+            result=fun()
+            total[j]+=sum(result)
+            #counter
+            m=m+1
 
-        else:
-            #extracting text and coordinates from tweets
-            a=json.loads(a[:-1])
-            a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
+    else:
+        #extracting text and coordinates from tweets
+        a=json.loads(a[:-1])
+        a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].replace(",","").replace("!","").replace(".","").replace("?","").replace("'","").replace('''"''',"").lower().split()]
 
-            # set_text=set(a[1])  redundant???
+        # set_text=set(a[1])  redundant???
 
-            #calculating whether tweet lies in grids
-            flg_area=0
-            for i in range(len(mapdict)):
-                if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
-                    flg_area=1
-                    area_cnt[i]+=1
-                    j=i
+        #calculating whether tweet lies in grids
+        flg_area=0
+        for i in range(len(mapdict)):
+            if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+                flg_area=1
+                area_cnt[i]+=1
+                j=i
 
-            #counting sentiment score of a tweet, only if it lies in map range
-            if flg_area==1:
-                result=fun()
-                total[j]+=sum(result)
-                #counter
-                m=m+1
+        #counting sentiment score of a tweet, only if it lies in map range
+        if flg_area==1:
+            result=fun()
+            total[j]+=sum(result)
+            #counter
+            m=m+1
 
-    #closing the input file object
-    file_in.close()
-    area_cnt_dict = {area_nm_list[i]: area_cnt[i] for i in range(len(mapdict))}
-    total_sent_dict = {area_nm_list[i]: total[i] for i in range(len(mapdict))}
+#closing the input file object
+file_in.close()
+area_cnt_dict = {area_nm_list[i]: area_cnt[i] for i in range(len(mapdict))}
+total_sent_dict = {area_nm_list[i]: total[i] for i in range(len(mapdict))}
 
-    #collecting data to be returned
-    to_be_sent=area_cnt_dict,total_sent_dict
-    print("Tweets cnt by Area, Sum of Sentiments by Area= ",to_be_sent)
+#collecting data to be returned
+to_be_sent=area_cnt_dict,total_sent_dict
+print("Tweets cnt by Area, Sum of Sentiments by Area= ",to_be_sent)
+
+comm.send(to_be_sent, dest=0)
+print("Thread ", rank ," has shared data @", time.ctime())
+
 
 #master thread gathering data from child nodes and integerating it
 if rank == 0 or size==1:
@@ -191,6 +195,6 @@ if rank == 0 or size==1:
 
 
 #child threads sending the output of processed data
-else:
-    comm.send(to_be_sent, dest=0)
-    print("Thread ", rank ," has shared data @", time.ctime())
+#else:
+#    comm.send(to_be_sent, dest=0)
+#    print("Thread ", rank ," has shared data @", time.ctime())
