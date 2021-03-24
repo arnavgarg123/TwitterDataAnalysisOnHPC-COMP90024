@@ -84,7 +84,7 @@ for i in range(len(a[1])):
 flg_area=0
 area_cnt = [0 for i in range(len(mapdict))]
 for i in range(len(mapdict)):
-    if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+    if (float(area_val_list[i][0]) < float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
         flg_area=1
         area_cnt[i]+=1
         j=i
@@ -122,7 +122,7 @@ while True:
         #calculating whether tweet lies in grids
         flg_area=0
         for i in range(len(mapdict)):
-            if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+            if (float(area_val_list[i][0]) < float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
                 flg_area=1
                 area_cnt[i]+=1
                 j=i
@@ -147,7 +147,7 @@ while True:
         #calculating whether tweet lies in grids
         flg_area=0
         for i in range(len(mapdict)):
-            if (float(area_val_list[i][0]) <= float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) <= float(a[0][1]) < float(area_val_list[i][3])):
+            if (float(area_val_list[i][0]) < float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
                 flg_area=1
                 area_cnt[i]+=1
                 j=i
@@ -181,9 +181,9 @@ if rank == 0 or size==1:
         d1=Counter(d1)+Counter(rcvd_val[0])
         d2=Counter(d2)+Counter(rcvd_val[1])
     result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
-    print("Total Sentiment Score by Area:",d2)
-    print("Tweets after Filtering by Area:",d1)
-    '''
+    #print("Total Sentiment Score by Area:",d2)
+    #print("Tweets after Filtering by Area:",d1)
+
     print('A1   '+str(d2['A1'])+ "   "+ str(d1['A1']))
     print('A2   '+str(d2['A2'])+ "   "+ str(d1['A2']))
     print('A3   '+str(d2['A3'])+ "   "+ str(d1['A3']))
@@ -201,7 +201,8 @@ if rank == 0 or size==1:
     print('D4   '+str(d2['D4'])+ "   "+ str(d1['D4']))
     print('D5   '+str(d2['D5'])+ "   "+ str(d1['D5']))
     print("     "+str(sum(d2.values()))+"       "+str(sum(d1.values())))
-    '''
+    print(d2.values())
+
     print("Average sentiment Score by Area:",result)
     print("--- %s seconds ---" % (time.time() - start_time))
 
