@@ -20,17 +20,22 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 print('Thread ',rank, 'started @', time.ctime())
 
+#f=open("test.txt", "a")
 def fun():
     result=[]
+    #words=[]
     for x in sentiment_word:
         if len(x[:-1])>1:
             if " ".join(a[1]).count(" "+" ".join(x[:-1])+" ")>0:
                 result=result+[int(x[-1])*" ".join(a[1]).count(" "+" ".join(x[:-1])+" ")]
+                #words=words+[" ".join(x[:-1])]
                 #print("-----------",result, x,"+++", " ".join(a[1]))
                 a[1]=" ".join(a[1]).replace(" ".join(x[:-1]),"123").split()
         elif len(x[:-1])==1:
             if a[1].count(x[0])>0:
                 result=result+[int(x[1])*a[1].count(x[0])]
+                #words=words+[" ".join(x[:-1])]
+    #f.write(str(words) + str(sum(result)) + " " +" ".join(a[1]) + "\n")
     return result
 
 #creating data file object
@@ -178,6 +183,25 @@ if rank == 0 or size==1:
     result = Counter({key : d2[key] / d1[key] for key in d1 if d1[key]!=0})
     print("Total Sentiment Score by Area:",d2)
     print("Tweets after Filtering by Area:",d1)
+    '''
+    print('A1   '+str(d2['A1'])+ "   "+ str(d1['A1']))
+    print('A2   '+str(d2['A2'])+ "   "+ str(d1['A2']))
+    print('A3   '+str(d2['A3'])+ "   "+ str(d1['A3']))
+    print('A4   '+str(d2['A4'])+ "   "+ str(d1['A4']))
+    print('B1   '+str(d2['B1'])+ "   "+ str(d1['B1']))
+    print('B2   '+str(d2['B2'])+ "   "+ str(d1['B2']))
+    print('B3   '+str(d2['B3'])+ "   "+ str(d1['B3']))
+    print('B4   '+str(d2['B4'])+ "   "+ str(d1['B4']))
+    print('C1   '+str(d2['C1'])+ "   "+ str(d1['C1']))
+    print('C2   '+str(d2['C2'])+ "   "+ str(d1['C2']))
+    print('C3   '+str(d2['C3'])+ "   "+ str(d1['C3']))
+    print('C4   '+str(d2['C4'])+ "   "+ str(d1['C4']))
+    print('C1   '+str(d2['C1'])+ "   "+ str(d1['C5']))
+    print('D3   '+str(d2['D3'])+ "   "+ str(d1['D3']))
+    print('D4   '+str(d2['D4'])+ "   "+ str(d1['D4']))
+    print('D5   '+str(d2['D5'])+ "   "+ str(d1['D5']))
+    print("     "+str(sum(d2.values()))+"       "+str(sum(d1.values())))
+    '''
     print("Average sentiment Score by Area:",result)
     print("--- %s seconds ---" % (time.time() - start_time))
 
