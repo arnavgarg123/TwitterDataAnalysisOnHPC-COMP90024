@@ -47,34 +47,11 @@ m=0
 total=[0 for i in range(len(mapdict))]
 
 #skipping first line of file as we so not look at number of lines in the json file
-next(file_in)
-#loop to load and count the first line to be read by each thread
-for i in range(0,rank):
-    #skipping the lines read by other thread
-    next(file_in)
-a=file_in.readline()
+a=file_in.readlines()
 #extracting text and coordinates from tweets
-a=json.loads(a[:-2])
-a=[a["value"]["geometry"]["coordinates"],a["doc"]["text"].lower().split()]
+a=json.loads(a)
 
-#counting sentiment score of a tweet, only if it lies in map range
-#if flg_area==1:
-#    result=fun()
-#    total[j]+=sum(result)
-    #counter
-#    m=m+1
 
-#loop to load and count the lines to be read by each thread
-while True:
-    for i in range(1,size):
-        #exception handeling as the file object could try to go past the last line
-        try:
-            #skipping the lines read by other thread
-            next(file_in)
-        except:
-            break
-    a=file_in.readline()
-        #counting sentiment score of a tweet, only if it lies in map range
 
 
 #closing the input file object
