@@ -85,16 +85,19 @@ flg_area=0
 area_cnt = [0 for i in range(len(mapdict))]
 for i in range(len(mapdict)):
     if (float(area_val_list[i][0]) < float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
-        flg_area=1
+        result=fun()
+        total[i]+=sum(result)
+        #counter
+        m=m+1
         area_cnt[i]+=1
-        j=i
+        break
 
 #counting sentiment score of a tweet, only if it lies in map range
-if flg_area==1:
-    result=fun()
-    total[j]+=sum(result)
+#if flg_area==1:
+#    result=fun()
+#    total[j]+=sum(result)
     #counter
-    m=m+1
+#    m=m+1
 
 #loop to load and count the lines to be read by each thread
 while True:
@@ -123,16 +126,15 @@ while True:
         flg_area=0
         for i in range(len(mapdict)):
             if (float(area_val_list[i][0]) < float(a[0][0]) <= float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
-                flg_area=1
+                result=fun()
+                total[i]+=sum(result)
+                #counter
+                m=m+1
                 area_cnt[i]+=1
-                j=i
+                break
 
         #counting sentiment score of a tweet, only if it lies in map range
-        if flg_area==1:
-            result=fun()
-            total[j]+=sum(result)
-            #counter
-            m=m+1
+
 
     else:
         #extracting text and coordinates from tweets
@@ -148,16 +150,15 @@ while True:
         flg_area=0
         for i in range(len(mapdict)):
             if (float(area_val_list[i][0]) < float(a[0][0]) < float(area_val_list[i][1])) and (float(area_val_list[i][2]) < float(a[0][1]) <= float(area_val_list[i][3])):
-                flg_area=1
+                result=fun()
+                total[i]+=sum(result)
+                #counter
+                m=m+1
                 area_cnt[i]+=1
-                j=i
+                break
 
         #counting sentiment score of a tweet, only if it lies in map range
-        if flg_area==1:
-            result=fun()
-            total[j]+=sum(result)
-            #counter
-            m=m+1
+
 
 #closing the input file object
 file_in.close()
