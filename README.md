@@ -46,8 +46,8 @@ threads as compared to running on a single thread.
 ### Setup
 - Make sure you have python3 installed on your system.
 - To run the script on Windows, install Microsoft MPI from this [link](https://www.microsoft.com/en-us/download/details.aspx?id=100593).
-- To run the script on Linux,  run the following commands
-    `sudo apt update`
+- To run the script on Linux,  run the following commands<br />
+    `sudo apt update`<br />
     `sudo apt install python3-mpi4py`
 - Using terminal/cmd navigate to the folder containing the files of this repo and run the command
     ```
