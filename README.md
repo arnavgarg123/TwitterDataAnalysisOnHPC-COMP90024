@@ -64,7 +64,7 @@ threads as compared to running on a single thread.
 
 ## Contributing
 ### Step 1
- - Clone this repo to your local machine using https://github.com/arnavgarg123/DiabetesDatabase-NaiveBayes-SVM.git <br />
+ - Clone this repo to your local machine using https://github.com/arnavgarg123/TwitterDataAnalysisOnHPC-COMP90024.git <br />
 ### Step 2
  - HACK AWAY! <br />
 ### Step 3
